@@ -115,7 +115,7 @@ case "$status" in
 esac
 
 if [ -z "$files" ]; then
-  echo No relevant changes on $branch since revision $REV.
+  echo No relevant changes on $branch since revision $last_revision.
   # Return 2 to indicate no relevant changes.
   exit 2
 fi
