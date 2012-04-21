@@ -49,13 +49,28 @@ x*--disable-bootstrap*)
   ;;
 esac
 
-if rpm -q ppl > /dev/null; then
-  if grep "with_ppl=no" $GCC_DIR/configure.ac | grep plus; then
-    WITH="--with-ppl=/"
-  fi
+case x"$TARGET" in
+xi[3-6]86-*)
+  CC="gcc -m32"
+  CXX="g++ -m32"
+  PATH=/usr/local32/bin:$PATH
+  ;;
+x*)
+  CC="gcc"
+  CXX="g++"
+  ;;
+esac
 
-  if grep "with_cloog=no" $GCC_DIR/configure.ac | grep plus; then
-    WITH="$WITH --with-cloog=/"
+WITH=
+if [ -z "$WITH" ] ;then
+  if rpm -q ppl > /dev/null; then
+    if grep "with_ppl=no" $GCC_DIR/configure.ac | grep plus; then
+      WITH="--without-ppl"
+    fi
+
+    if grep "with_cloog=no" $GCC_DIR/configure.ac | grep plus; then
+      WITH="$WITH --without-cloog"
+    fi
   fi
 fi
 
@@ -63,9 +78,6 @@ CONFIGURE="../../../$GCC_DIR/configure --prefix=$prefix  \
     --enable-clocale=gnu \
     --with-system-zlib \
     --with-demangler-in-ld \
-    --enable-shared \
-    --enable-threads=posix \
-    --enable-haifa \
     $CHECKING \
     --enable-languages=$LANGS \
     $WITH \
@@ -73,6 +85,8 @@ CONFIGURE="../../../$GCC_DIR/configure --prefix=$prefix  \
     $BOOTSTRAP
 "
 
+export CC
+export CXX
 cd $BUILD_DIR &&
   rm -rf bld &&
   mkdir bld &&
@@ -82,7 +96,7 @@ cd $BUILD_DIR &&
   make $BOOTSTRAP_MODE $FLAGS -j $CPU_NUM &>../make.log &&
 # make install must not specify -j x, or some libs like libmudflap won't be 
 # installed correctly
-  make install &>../install.log &&
+  (make install-strip || make install) &>../install.log &&
   echo $REV > ../../last_revision &&
   exit 0
 
