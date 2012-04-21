@@ -1,7 +1,8 @@
 branch=master
 
-# Last status
-last_status=bad
+# The good and bad revisions
+good_revision=186516
+bad_revision=186566
 
 # Which test to run
 GCC_TEST=./gcc-spec-run
