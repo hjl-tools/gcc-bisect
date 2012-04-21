@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ -f gcc-build.in ] && . gcc-build.in
+. ./gcc.cfg
 
 [ -z "$GCC_DIR" ] && GCC_DIR=gcc
 

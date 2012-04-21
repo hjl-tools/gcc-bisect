@@ -1,7 +1,8 @@
 #!/bin/sh
 
 REV="${1}"
-BRANCH="${2}"
+
+. ./gcc.cfg
 
 if [ -z "$REV" ]; then
   echo Need to specify revision number!
@@ -24,11 +25,12 @@ cd $GCC_DIR
 rm -f gcc/REVISION
 
 # Check branch status
-branch=$(git status | grep "On branch" | sed -e "s/.*On branch //")
-[ -z "$branch" ] && branch=$BRANCH
 if [ -z "$branch" ]; then
-  echo Need to specify a branch!
+  branch=$(git status | grep "On branch" | sed -e "s/.*On branch //")
+  if [ -z "$branch" ]; then
+    echo Need to specify a branch!
   exit 1
+  fi
 fi
 
 case $branch in
