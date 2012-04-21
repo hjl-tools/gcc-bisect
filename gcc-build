@@ -4,21 +4,14 @@
 
 [ -z "$GCC_DIR" ] && GCC_DIR=gcc
 
-if [ -f last_revision ]; then
-  ./gcc-changes
-  if [ $? = 2 ]; then
-    echo No changes since last build!
-    exit $?
-  fi
-fi
-
 pushd $GCC_DIR
 REV=$(git log -1 |
       grep git-svn-id |
       awk '{ print $2 }' |
       awk -F@ '{ print $2 }')
 popd
-prefix=$(pwd)/$REV/usr
+BUILD_DIR=$branch/$REV
+prefix=$(pwd)/$BUILD_DIR/usr
 
 CPU_NUM=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 if [ $CPU_NUM -ge 12 ]; then
@@ -27,12 +20,20 @@ fi
 
 echo "$(date +"%d %H:%M"): building revision $REV"
 
-[ -d $REV ] || mkdir $REV
+[ -d $BUILD_DIR ] || mkdir -p $BUILD_DIR
 
-[ -d $REV/usr/bin ] && exit 0
+[ -d $BUILD_DIR/usr/bin ] && exit 0
 
-if [ -f $REV/make.log ]; then
-  if grep "Error " $REV/make.log; then
+if [ -f last_revision ]; then
+  ./gcc-changes
+  if [ $? = 2 ]; then
+    echo No changes since last build!
+    exit $?
+  fi
+fi
+
+if [ -f $BUILD_DIR/make.log ]; then
+  if grep "Error " $BUILD_DIR/make.log; then
     exit 1
   else
     exit 0
@@ -58,7 +59,7 @@ if rpm -q ppl > /dev/null; then
   fi
 fi
 
-CONFIGURE="../../$GCC_DIR/configure --prefix=$prefix  \
+CONFIGURE="../../../$GCC_DIR/configure --prefix=$prefix  \
     --enable-clocale=gnu \
     --with-system-zlib \
     --with-demangler-in-ld \
@@ -72,7 +73,7 @@ CONFIGURE="../../$GCC_DIR/configure --prefix=$prefix  \
     $BOOTSTRAP
 "
 
-cd $REV &&
+cd $BUILD_DIR &&
   rm -rf bld &&
   mkdir bld &&
   cd bld &&
