@@ -4,6 +4,14 @@
 
 [ -z "$GCC_DIR" ] && GCC_DIR=gcc
 
+if [ -f last_revision ]; then
+  ./gcc-changes
+  if [ $? = 2 ]; then
+    echo No changes since last build!
+    exit $?
+  fi
+fi
+
 pushd $GCC_DIR
 REV=$(git log -1 |
       grep git-svn-id |
