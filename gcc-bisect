@@ -1,0 +1,47 @@
+#!/bin/sh
+
+. ./gcc.cfg
+
+[ -z "$GCC_DIR" ] && GCC_DIR=gcc
+
+if [ ! -d $GCC_DIR/.git ]; then
+  echo "$GCC_DIR isn't a GCC git source tree!"
+  exit 1
+fi
+
+gcc_test ()
+{
+  # Build gcc
+  ./gcc-build
+  case $? in
+  0)
+    # Run test
+    $GCC_TEST
+    if [ $? = 0 ];then
+      status=good
+    else
+      status=bad
+    fi
+    last_status=status
+    ;;
+  2)
+    status=$last_status
+    ;;
+  *)
+    echo GCC $branch branch revision $(cat last_revision) failed to build
+    exit 1
+    ;;
+  esac
+}
+
+while [ 1 = 1 ]; do
+  gcc_test
+  pushd $GCC_DIR
+  bisect=$(git bisect $status 2>&1)
+  echo $bisect | grep "Bisecting:"
+  status=$?
+  popd
+  [ $status != 0 ] && break
+done
+
+echo $bisect
