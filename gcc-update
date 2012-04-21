@@ -1,0 +1,151 @@
+#!/bin/sh
+
+REV="${1}"
+BRANCH="${2}"
+
+if [ -z "$REV" ]; then
+  echo Need to specify revision number!
+  exit 1
+fi
+
+[ -z "$GCC_DIR" ] && GCC_DIR=gcc
+
+if [ ! -d $GCC_DIR/.git ]; then
+  echo "$GCC_DIR isn't a GCC git source tree!"
+  exit 1
+fi
+
+echo "Update $GCC_DIR GCC git source tree"
+
+LOG=`pwd`/git.log
+
+cd $GCC_DIR
+
+rm -f gcc/REVISION
+
+# Check branch status
+branch=$(git status | grep "On branch" | sed -e "s/.*On branch //")
+[ -z "$branch" ] && branch=$BRANCH
+if [ -z "$branch" ]; then
+  echo Need to specify a branch!
+  exit 1
+fi
+
+case $branch in
+master)
+  svn_branch=trunk
+  GCC_VERSION=trunk
+  ;;
+*)
+  svn_branch=$branch
+  GCC_VERSION=$(sed -s "s/\.[0-9]*$//" gcc/BASE-VER)
+  ;;
+esac
+
+commit=$(git log --grep "git-svn-id.*@$REV" origin/$branch |
+	 head -1 |
+	 awk '{ print $2 }')
+
+if [ -z "$commit" ]; then
+  echo Invalid revsion: $REV!
+  exit 1
+fi
+
+# Check if GCC source is clean
+status=$(git status | tail -2 | grep -v "On branch")
+case "$status" in
+*clean*)
+  ;;
+*)
+  echo GCC $branch branch not clean:
+  git status
+  exit 1
+  ;;
+esac
+
+# Check if we need to fast-forward
+git fetch > $LOG 2>&1
+status=$(git status | head -2 | grep -v "On branch")
+case "$status" in
+*clean*|*"can be fast-forwarded"*)
+  skip_cpus="alpha arm avr avr32 bfin c6x cr16 cris epiphany fr30 frv
+	     h8300 hppa ia64 iq2000 lm32 m32c m32r m68k mcore mep
+	     microblaze mips mmix mn10300 moxie pa pdp11 picochip
+	     powerpc rl78 rs6000 rx s390 score sh sh64 sparc spu
+	     stormy16 tilegx tilepro v850 vax vms xtensa"
+  skip=
+  for c in $skip_cpus; do
+    if [ -z "$skip" ]; then 
+      skip="$c"
+    else
+      skip="$skip|/$c"
+    fi
+  done
+  # Check if changes are relevant.
+  files=$(git diff --stat $commit |
+	  grep "|" |
+	  awk '{ print $1 }' |
+	  grep -v /ada/ |
+	  grep -v /libada/ |
+	  grep -v /go/ |
+	  grep -v /libgo/ |
+	  grep -v BASE-VER |
+	  grep -v ChangeLog |
+	  grep -v contrib/ |
+	  grep -v COPYING |
+	  grep -v DATESTAMP |
+	  grep -v DEV-PHASE |
+	  grep -v cygming |
+	  grep -v cygwin |
+	  grep -v darwin |
+	  grep -v djgpp |
+	  grep -v freebsd |
+	  grep -v hpux |
+	  grep -v interix |
+	  grep -v lynx |
+	  grep -v mingw |
+	  grep -v netbsd |
+	  grep -v netware |
+	  grep -v nwld |
+	  grep -v openbsd |
+	  grep -v rtems |
+	  grep -v sol2 |
+	  grep -v solaris |
+	  grep -v vxworks |
+	  grep -v win32 |
+	  grep -v /doc/ |
+	  grep -v /po/ |
+	  grep -v maintainer-scripts |
+	  grep -v MAINTAINERS |
+	  grep -v README |
+	  grep -v testsuite/ |
+	  grep -v .gitignore |
+	  egrep -v "\.texi$" |
+	  egrep -v "($skip)")
+  ;;
+*)
+  echo GCC $branch branch cannot be fast-forwarded:
+  git status
+  exit 1
+  ;;
+esac
+
+if [ -z "$files" ]; then
+  ./contrib/gcc_update --touch >> $LOG
+  echo "[$svn_branch revision $REV]" > gcc/REVISION
+  echo No relevant changes on $branch since revision $REV.
+  # Return 2 to indicate no relevant changes.
+  exit 2
+fi
+
+# Check out
+echo Check out GCC $branch source tree
+git checkout $commit >> $LOG
+if [ $? != 0 ]; then
+  echo GCC $branch branch failed to check out revision $REV
+  exit 1
+fi
+./contrib/gcc_update --touch >> $LOG
+
+echo "[$svn_branch revision $REV]" > gcc/REVISION
+exit 0
