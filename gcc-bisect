@@ -9,6 +9,8 @@ if [ ! -d $GCC_DIR/.git ]; then
   exit 1
 fi
 
+found=
+
 gcc_test ()
 {
   # Build gcc
@@ -22,17 +24,68 @@ gcc_test ()
     else
       status=bad
     fi
+    case x$found in
+    x)
+      found=$status
+      ;;
+    *)
+      [ $found = $status ] || found=goodbad
+      ;;
+    esac
     last_status=status
     ;;
   2)
     status=$last_status
     ;;
   *)
-    echo GCC $branch branch revision $(cat last_revision) failed to build
+    echo GCC $branch branch revision $(cat $branch/last_revision) failed to build
     exit 1
     ;;
   esac
 }
+
+if [ -z "$last_status" -a -n "$bad_revision" -a -n "$good_revision" ]; then
+  pushd $GCC_DIR
+  git bisect reset
+  popd
+
+  # Try the good revision
+  ./gcc-update $good_revision
+  [ $? = 0 -o $? = 2 ] || exit 1
+  pushd $GCC_DIR
+  git bisect start || exit 1
+  git bisect good || exit 1
+  popd
+  gcc_test
+  if [ $status != good ]; then
+    echo Good revision $good_revision is bad!
+    exit 1
+  fi
+
+  # Try the bad revision
+  ./gcc-update $bad_revision || exit 1
+  pushd $GCC_DIR
+  git bisect bad || exit 1
+  popd
+  gcc_test
+  if [ $status != bad ]; then
+    echo Bad revision $good_revision is good!
+    exit 1
+  fi
+  last_status=bad
+  found=bad
+
+  # Start bisect
+  pushd $GCC_DIR
+  bisect=$(git bisect bad 2>&1)
+  echo $bisect | grep "Bisecting:"
+  status=$?
+  popd
+  if [ $status != 0 ]; then
+    echo $bisect
+    exit 0
+  fi
+fi
 
 while [ 1 = 1 ]; do
   gcc_test
@@ -45,3 +98,8 @@ while [ 1 = 1 ]; do
 done
 
 echo $bisect
+
+if [ $found != "goodbad" ]; then
+  echo No bad or good commit found on GCC $branch branch!
+  exit 1
+fi
