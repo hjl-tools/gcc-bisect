@@ -1,0 +1,23 @@
+branch=master
+
+# Last status
+last_status=bad
+
+# Which test to run
+GCC_TEST=./gcc-spec-run
+
+# SPEC CPU configuration
+SPEC_RUN=445.gobmk
+SPEC_RUN=256.bzip2
+SPEC_RUN=482.sphinx3
+SPEC_RUN=447.dealII
+SPEC_FLAGS="-T peak"
+SPEC_FLAGS="-T base"
+SPEC_FLAGS="-T base -i test"
+SPEC_FLAGS="-T base -e lto -i test"
+SPEC_FLAGS="-T peak -e lto -i test"
+SPEC_FLAGS="-T peak -i test"
+SPEC_DIR=$(pwd)/spec/2000/spec
+SPEC_DIR=$(pwd)/spec/2006/spec
+SPEC_CFG=lnx-i686-gcc.cfg
+SPEC_CFG=lnx-x86_64-gcc.cfg
