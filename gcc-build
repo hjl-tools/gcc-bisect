@@ -24,7 +24,7 @@ echo "$(date +"%d %H:%M"): building revision $REV"
 
 [ -d $BUILD_DIR/usr/bin ] && exit 0
 
-if [ -f last_revision ]; then
+if [ -f $branch/last_revision ]; then
   ./gcc-changes
   if [ $? = 2 ]; then
     echo No changes since last build!

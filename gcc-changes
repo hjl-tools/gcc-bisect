@@ -9,8 +9,8 @@ if [ ! -d $GCC_DIR/.git ]; then
   exit 1
 fi
 
-if [ -f last_revision ]; then
-  last_revision=$(cat last_revision)
+if [ -f $branch/last_revision ]; then
+  last_revision=$(cat $branch/last_revision)
 else
   echo "last_revision doesn't exist!"
   exit 1
