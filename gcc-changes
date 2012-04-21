@@ -1,0 +1,131 @@
+#!/bin/sh
+
+BRANCH="${1}"
+
+[ -z "$GCC_DIR" ] && GCC_DIR=gcc
+
+if [ ! -d $GCC_DIR/.git ]; then
+  echo "$GCC_DIR isn't a GCC git source tree!"
+  exit 1
+fi
+
+if [ -f last_revision ]; then
+  last_revision=$(cat last_revision)
+else
+  echo "last_revision doesn't exist!"
+  exit 1
+fi
+
+cd $GCC_DIR
+
+rm -f gcc/REVISION
+
+# Check branch status
+branch=$(git status | grep "On branch" | sed -e "s/.*On branch //")
+[ -z "$branch" ] && branch=$BRANCH
+if [ -z "$branch" ]; then
+  echo Need to specify a branch!
+  exit 1
+fi
+
+case $branch in
+master)
+  svn_branch=trunk
+  GCC_VERSION=trunk
+  ;;
+*)
+  svn_branch=$branch
+  GCC_VERSION=$(sed -s "s/\.[0-9]*$//" gcc/BASE-VER)
+  ;;
+esac
+
+last_commit=$(git log --grep "git-svn-id.*@$last_revision" origin/$branch |
+	      head -1 |
+	      awk '{ print $2 }')
+
+if [ -z "$last_commit" ]; then
+  echo Invalid last revsion: $last_revision!
+  exit 1
+fi
+
+# Check if GCC source is clean
+status=$(git status | tail -2 | grep -v "On branch")
+case "$status" in
+*clean*)
+  skip_cpus="alpha arm avr avr32 bfin c6x cr16 cris epiphany fr30 frv
+	     h8300 hppa ia64 iq2000 lm32 m32c m32r m68k mcore mep
+	     microblaze mips mmix mn10300 moxie pa pdp11 picochip
+	     powerpc rl78 rs6000 rx s390 score sh sh64 sparc spu
+	     stormy16 tilegx tilepro v850 vax vms xtensa"
+  skip=
+  for c in $skip_cpus; do
+    if [ -z "$skip" ]; then 
+      skip="$c"
+    else
+      skip="$skip|/$c"
+    fi
+  done
+  # Check if changes are relevant.
+  files=$(git diff --stat $last_commit |
+	  grep "|" |
+	  awk '{ print $1 }' |
+	  grep -v /ada/ |
+	  grep -v /libada/ |
+	  grep -v /go/ |
+	  grep -v /libgo/ |
+	  grep -v BASE-VER |
+	  grep -v ChangeLog |
+	  grep -v contrib/ |
+	  grep -v COPYING |
+	  grep -v DATESTAMP |
+	  grep -v DEV-PHASE |
+	  grep -v cygming |
+	  grep -v cygwin |
+	  grep -v darwin |
+	  grep -v djgpp |
+	  grep -v freebsd |
+	  grep -v hpux |
+	  grep -v interix |
+	  grep -v lynx |
+	  grep -v mingw |
+	  grep -v netbsd |
+	  grep -v netware |
+	  grep -v nwld |
+	  grep -v openbsd |
+	  grep -v rtems |
+	  grep -v sol2 |
+	  grep -v solaris |
+	  grep -v vxworks |
+	  grep -v win32 |
+	  grep -v /doc/ |
+	  grep -v /po/ |
+	  grep -v maintainer-scripts |
+	  grep -v MAINTAINERS |
+	  grep -v README |
+	  grep -v testsuite/ |
+	  grep -v .gitignore |
+	  egrep -v "\.texi$" |
+	  egrep -v "($skip)")
+  ;;
+*)
+  echo GCC $branch branch not clean:
+  git status
+  exit 1
+  ;;
+esac
+
+if [ -z "$files" ]; then
+  echo No relevant changes on $branch since revision $REV.
+  # Return 2 to indicate no relevant changes.
+  exit 2
+fi
+
+./contrib/gcc_update --touch
+
+CURRENT_REVISION=$(git log -1 |
+		   grep git-svn-id |
+		   awk '{ print $2 }' |
+		   awk -F@ '{ print $2 }')
+
+echo "[$svn_branch revision $CURRENT_REVISION]" > gcc/REVISION
+exit 0
