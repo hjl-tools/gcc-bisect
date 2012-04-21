@@ -78,11 +78,11 @@ if [ -z "$last_status" -a -n "$bad_revision" -a -n "$good_revision" ]; then
   # Start bisect
   pushd $GCC_DIR
   bisect=$(git bisect bad 2>&1)
-  echo $bisect | grep "Bisecting:"
+  echo "$bisect" | grep "Bisecting:"
   status=$?
   popd
   if [ $status != 0 ]; then
-    echo $bisect
+    echo "$bisect"
     exit 0
   fi
 fi
@@ -91,13 +91,13 @@ while [ 1 = 1 ]; do
   gcc_test
   pushd $GCC_DIR
   bisect=$(git bisect $status 2>&1)
-  echo $bisect | grep "Bisecting:"
+  echo "$bisect" | grep "Bisecting:"
   status=$?
   popd
   [ $status != 0 ] && break
 done
 
-echo $bisect
+echo "$bisect"
 
 if [ $found != "goodbad" ]; then
   echo No bad or good commit found on GCC $branch branch!
