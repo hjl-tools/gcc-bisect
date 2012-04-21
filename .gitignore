@@ -1,5 +1,6 @@
 gcc
 gcc.cfg
 git.log
+gcc-testsuite-run
 master
 spec

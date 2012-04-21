@@ -1,0 +1,25 @@
+#!/bin/sh
+
+. ./gcc.cfg
+
+[ -z "$GCC_DIR" ] && GCC_DIR=gcc
+
+pushd $GCC_DIR
+REV=$(git log -1 |
+      grep git-svn-id |
+      awk '{ print $2 }' |
+      awk -F@ '{ print $2 }')
+popd
+BUILD_DIR=$branch/$REV
+CHECK_LOG=`pwd`/$BUILD_DIR/check.log
+
+# Run libstdc++-v3 testsuite
+TEST_DIR=$BUILD_DIR/bld/x86_64-unknown-linux-gnu/libstdc++-v3
+cd $TEST_DIR
+make check RUNTESTFLAGS="conformance.exp=mem_check.cc" > $CHECK_LOG 2>&1
+grep "^FAIL" $CHECK_LOG 
+if [ $? -eq 0 ]; then
+  exit 1
+else
+  exit 0
+fi

@@ -6,6 +6,7 @@ bad_revision=186566
 
 # Which test to run
 GCC_TEST=./gcc-spec-run
+GCC_TEST=./gcc-testsuite-run
 
 # SPEC CPU configuration
 SPEC_RUN=445.gobmk
