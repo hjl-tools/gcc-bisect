@@ -9,6 +9,11 @@ GCC_TEST=./gcc-spec-run
 GCC_TEST=./gcc-testsuite-run
 
 # SPEC CPU configuration
+# Timeout in seconds
+SPEC_TIMEOUT=120
+# SPEC CPU processes to kill
+SPEC_KILLS=h264ref_base.lnx32e-gcc
+
 SPEC_RUN=445.gobmk
 SPEC_RUN=256.bzip2
 SPEC_RUN=482.sphinx3

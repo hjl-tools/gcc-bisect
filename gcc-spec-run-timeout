@@ -1,0 +1,80 @@
+#!/bin/sh
+
+. ./gcc.cfg
+
+if [ -z "$SPEC_TIMEOUT" ]; then
+  echo Must specify timeout with SPEC_TIMEOUT!
+  exit 1
+fi
+
+[ -z "$GCC_DIR" ] && GCC_DIR=gcc
+
+cd $GCC_DIR
+REV=$(git log -1 |
+      grep git-svn-id |
+      awk '{ print $2 }' |
+      awk -F@ '{ print $2 }')
+cd -
+BUILD_DIR=$branch/$REV
+prefix=$(pwd)/$BUILD_DIR/usr
+RUN_LOG=`pwd`/$BUILD_DIR/spec.log
+
+export PATH=$prefix/bin:$PATH
+export LD_LIBRARY_PATH=$prefix/lib64:$prefix/lib:$LD_LIBRARY_PATH
+
+echo $(date +"%d %H:%M"): running spec with $(which gcc)
+
+SPEC_DIR=${SPEC_DIR-$PWD/spec/2000/spec}
+SPEC_RUN=${SPEC_RUN-252.eon}
+SPEC_CFG=${SPEC_CFG-lnx-i686-O2-gcc-4.3.cfg}
+SPEC_FLAGS=${SPEC_FLAGS--T base -e o2}
+
+case $SPEC_DIR in
+*2006*)
+  CLEAN=scrub
+  ;;
+*)
+  CLEAN=nuke
+  ;;
+esac
+
+## kill orphaned spec processes
+killall -9 runspec > /dev/null 2>&1
+killall -9 specmake > /dev/null 2>&1
+killall -9 specinvoke > /dev/null 2>&1
+if [ -n "$SPEC_KILLS" ]; then
+  for k in $SPEC_KILLS; do
+    killall -9 $k > /dev/null 2>&1
+  done
+fi
+
+## cleanup spec environment
+cd $SPEC_DIR &&
+. ./shrc
+runspec -c $SPEC_CFG -a $CLEAN all &> $RUN_LOG &&
+rm -rf result/* &&
+cd - ||
+exit -1
+
+echo $(date +"%d %H:%M"): start spec run
+
+## run SPEC CPU and detect return value
+echo runspec -c $SPEC_CFG $SPEC_FLAGS -n 1 -l -o asc $SPEC_RUN >> $RUN_LOG
+runspec -c $SPEC_CFG $SPEC_FLAGS -n 1 -l -o asc $SPEC_RUN >> $RUN_LOG 2>&1&
+sleep $SPEC_TIMEOUT
+jobs
+jobs
+kill %1
+if [ $? -eq 0 ]; then
+  killall -9 runspec > /dev/null 2>&1
+  killall -9 specmake > /dev/null 2>&1
+  killall -9 specinvoke > /dev/null 2>&1
+  if [ -n "$SPEC_KILLS" ]; then
+    for k in $SPEC_KILLS; do
+      killall -9 $k > /dev/null 2>&1
+    done
+  fi
+  exit 1
+else
+  exit 0
+fi
