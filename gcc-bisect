@@ -44,18 +44,22 @@ gcc_test ()
   esac
 }
 
+# Remove the last revision
+rm -f $branch/last_revision
+
 if [ -z "$last_status" -a -n "$bad_revision" -a -n "$good_revision" ]; then
-  pushd $GCC_DIR
+  cd $GCC_DIR
   git bisect reset
-  popd
+  cd -
 
   # Try the good revision
+  echo Try the good revision: $good_revision
   ./gcc-update $good_revision
   [ $? = 0 -o $? = 2 ] || exit 1
-  pushd $GCC_DIR
+  cd $GCC_DIR
   git bisect start || exit 1
   git bisect good || exit 1
-  popd
+  cd -
   gcc_test
   if [ $status != good ]; then
     echo Good revision $good_revision is bad!
@@ -63,24 +67,22 @@ if [ -z "$last_status" -a -n "$bad_revision" -a -n "$good_revision" ]; then
   fi
 
   # Try the bad revision
+  echo Try the bad revision: $bad_revision
   ./gcc-update $bad_revision || exit 1
-  pushd $GCC_DIR
-  git bisect bad || exit 1
-  popd
   gcc_test
   if [ $status != bad ]; then
-    echo Bad revision $good_revision is good!
+    echo Bad revision $bad_revision is good!
     exit 1
   fi
   last_status=bad
   found=bad
 
   # Start bisect
-  pushd $GCC_DIR
+  cd $GCC_DIR
   bisect=$(git bisect bad 2>&1)
   echo "$bisect" | grep "Bisecting:"
   status=$?
-  popd
+  cd -
   if [ $status != 0 ]; then
     echo "$bisect"
     exit 0
@@ -89,11 +91,11 @@ fi
 
 while [ 1 = 1 ]; do
   gcc_test
-  pushd $GCC_DIR
+  cd $GCC_DIR
   bisect=$(git bisect $status 2>&1)
   echo "$bisect" | grep "Bisecting:"
   status=$?
-  popd
+  cd -
   [ $status != 0 ] && break
 done
 
