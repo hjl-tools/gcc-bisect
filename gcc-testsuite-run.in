@@ -4,12 +4,12 @@
 
 [ -z "$GCC_DIR" ] && GCC_DIR=gcc
 
-pushd $GCC_DIR
+cd $GCC_DIR
 REV=$(git log -1 |
       grep git-svn-id |
       awk '{ print $2 }' |
       awk -F@ '{ print $2 }')
-popd
+cd -
 BUILD_DIR=$branch/$REV
 CHECK_LOG=`pwd`/$BUILD_DIR/check.log
 
