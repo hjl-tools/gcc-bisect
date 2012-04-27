@@ -1,22 +1,32 @@
 #!/bin/sh
 
+REV=$1
+
 . ./gcc.cfg
 
 [ -z "$GCC_DIR" ] && GCC_DIR=gcc
 
-cd $GCC_DIR
-REV=$(git log -1 |
-      grep git-svn-id |
-      awk '{ print $2 }' |
-      awk -F@ '{ print $2 }')
-cd -
+if [ -z "$REV" ]; then
+  cd $GCC_DIR
+  REV=$(git log -1 |
+	grep git-svn-id |
+	awk '{ print $2 }' |
+	awk -F@ '{ print $2 }')
+  cd -
+fi
+
 BUILD_DIR=$branch/$REV
 CHECK_LOG=`pwd`/$BUILD_DIR/check.log
 
 # Run libstdc++-v3 testsuite
 TEST_DIR=$BUILD_DIR/bld/x86_64-unknown-linux-gnu/libstdc++-v3
+
+# Run gcc testsuite
+TEST_DIR=$BUILD_DIR/bld/gcc
 cd $TEST_DIR || exit 1
-make check RUNTESTFLAGS="conformance.exp=mem_check.cc" > $CHECK_LOG 2>&1
+#make check RUNTESTFLAGS="conformance.exp=mem_check.cc" > $CHECK_LOG 2>&1
+#make check-gcc RUNTESTFLAGS="execute.exp=vector-compare-1.c" > $CHECK_LOG 2>&1
+make check-gcc RUNTESTFLAGS="pch.exp=save-temps-1.c --target_board='unix{-m32}'" > $CHECK_LOG 2>&1
 grep "^FAIL" $CHECK_LOG 
 if [ $? -eq 0 ]; then
   exit 1

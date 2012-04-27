@@ -1,5 +1,7 @@
 #!/bin/sh
 
+REV=$1
+
 . ./gcc.cfg
 
 if [ -z "$SPEC_TIMEOUT" ]; then
@@ -9,12 +11,15 @@ fi
 
 [ -z "$GCC_DIR" ] && GCC_DIR=gcc
 
-cd $GCC_DIR
-REV=$(git log -1 |
-      grep git-svn-id |
-      awk '{ print $2 }' |
-      awk -F@ '{ print $2 }')
-cd -
+if [ -z "$REV" ]; then
+  cd $GCC_DIR
+  REV=$(git log -1 |
+	grep git-svn-id |
+	awk '{ print $2 }' |
+	awk -F@ '{ print $2 }')
+  cd -
+fi
+
 BUILD_DIR=$branch/$REV
 prefix=$(pwd)/$BUILD_DIR/usr
 RUN_LOG=`pwd`/$BUILD_DIR/spec.log
