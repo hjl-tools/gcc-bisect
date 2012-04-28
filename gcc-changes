@@ -16,6 +16,8 @@ else
   exit 1
 fi
 
+[ -z "$LOG" ] && LOG=`pwd`/git.log
+
 cd $GCC_DIR
 
 rm -f gcc/REVISION
@@ -121,7 +123,7 @@ if [ -z "$files" ]; then
   exit 2
 fi
 
-./contrib/gcc_update --touch
+./contrib/gcc_update --touch >> $LOG
 
 CURRENT_REVISION=$(git log -1 |
 		   grep git-svn-id |
