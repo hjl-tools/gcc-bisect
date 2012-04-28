@@ -25,7 +25,7 @@ prefix=$(pwd)/$BUILD_DIR/usr
 RUN_LOG=`pwd`/$BUILD_DIR/spec.log
 
 export PATH=$prefix/bin:$PATH
-export LD_LIBRARY_PATH=$prefix/lib64:$prefix/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$prefix/lib64:$prefix/libx32:$prefix/lib:$LD_LIBRARY_PATH
 
 echo $(date +"%d %H:%M"): running spec with $(which gcc)
 
