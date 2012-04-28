@@ -1,0 +1,29 @@
+#!/bin/sh
+
+REV=$1
+
+. ./gcc.cfg
+
+[ -z "$GCC_DIR" ] && GCC_DIR=gcc
+
+if [ -z "$REV" ]; then
+  cd $GCC_DIR
+  REV=$(git log -1 |
+	grep git-svn-id |
+	awk '{ print $2 }' |
+	awk -F@ '{ print $2 }')
+  cd -
+fi
+
+BUILD_DIR=$branch/$REV
+prefix=$(pwd)/$BUILD_DIR/usr
+
+export PATH=$prefix/bin:$PATH
+export LD_LIBRARY_PATH=$prefix/lib64:$prefix/libx32:$prefix/lib:$LD_LIBRARY_PATH
+
+gcc -S -O pr53153.c
+if [ $? -eq 0 ]; then
+  exit 0
+else
+  exit 1
+fi

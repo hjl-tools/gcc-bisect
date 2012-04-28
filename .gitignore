@@ -2,5 +2,8 @@ gcc
 gcc.cfg
 git.log
 gcc-testsuite-run
+gcc-test-run
 master
+nohup.*
+pr*
 spec
