@@ -52,7 +52,7 @@ function do_cycle()
 }
 
 # find out all revisions
-(cd master; ls $REVERSE -d */usr) | sed -e "s,/usr,," > rev.log
+(cd $branch; ls $REVERSE -d */usr) | sed -e "s,/usr,," > rev.log
 if [ -n "$REV_FIRST" ]; then
   REVLOG=rev.log.$$
   rm -f $REVLOG
