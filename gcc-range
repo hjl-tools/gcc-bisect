@@ -1,0 +1,199 @@
+#!/bin/bash
+
+. gcc.cfg
+
+while [ 1 = 1 ]; do
+  case x$1 in
+  x-f)
+    REV_FIRST=$2
+    shift 2
+    ;;
+  x-l)
+    REV_LAST=$2
+    shift 2
+    ;;
+  x-r)
+    REVERSE=-r
+    shift
+    ;;
+  *)
+    break
+    ;;
+  esac
+done
+
+function success ()
+{
+  echo -e $1
+  echo "Last good revision: $SUCCESS_REV"
+  echo "First bad revision: $FAIL_REV"
+  rm -f rev.log
+  exit 0
+}
+
+function fail ()
+{
+  echo -e $1
+  exit 1
+}
+
+function do_cycle()
+{
+  echo "Doing ... $REV_CURRENT"
+  $GCC_TEST $REV_CURRENT
+  RESULT=$?
+  if [ $RESULT -ne 0 ]; then
+    # It may be killed due to out of memory.
+    RESULT=1
+    FAIL_REV=$REV_CURRENT
+  else
+    SUCCESS_REV=$REV_CURRENT
+  fi
+}
+
+# find out all revisions
+(cd master; ls $REVERSE -d */usr) | sed -e "s,/usr,," > rev.log
+if [ -n "$REV_FIRST" ]; then
+  REVLOG=rev.log.$$
+  rm -f $REVLOG
+  touch $REVLOG
+  REMOVE=yes
+  for r in `cat rev.log`; do
+    if [ $r = $REV_FIRST ]; then
+      REMOVE=no
+    fi
+    if [ $REMOVE = no ]; then
+      echo $r >> $REVLOG 
+    fi
+  done
+  mv $REVLOG rev.log
+else
+  REV_FIRST=$(head -n 1 rev.log)
+fi
+if [ -n "$REV_LAST" ]; then
+  REVLOG=rev.log.$$
+  rm -f $REVLOG
+  touch $REVLOG
+  for r in `cat rev.log`; do
+    echo $r >> $REVLOG 
+    [ $r = $REV_LAST ] && break
+  done
+  mv $REVLOG rev.log
+else
+  REV_LAST=$(tail -n 1 rev.log)
+fi
+echo Narrowing bewteen $REV_FIRST and $REV_LAST using $TEST_SCRIPT ...
+
+if [ $REV_FIRST -gt $REV_LAST ]; then
+   FORWARD_DIRECTION=BACKWARD
+   BACKWARD_DIRECTION=FORWARD
+   GOAL=good
+   GOAL_RESULT=1
+else
+   FORWARD_DIRECTION=FORWARD
+   BACKWARD_DIRECTION=BACKWARD
+   GOAL=bad
+   GOAL_RESULT=0
+fi
+
+# count number of lines in rev.log
+LINE_END=$(grep -c ".*" ./rev.log)
+
+# God know what will happen if leave LINE_END=0
+# So make sure there IS changes between revisions
+if [ $LINE_END -le 0 ]; then
+  fail "Search aborted: No revision change between $START_REV and\n\
+$STOP_REV or svn error. Please check input or svn connection."
+fi
+LINE_BEGIN=1
+LINE_CURRENT=$LINE_END
+
+# strategy is: first - last - (center)
+
+echo "$LINE_END revsions from $REV_FIRST to $REV_LAST"
+echo "start searching... please wait"
+echo 
+
+# get base result for comparing 
+REV_CURRENT="$REV_FIRST"
+# We use REV_PREV to do incremental update.
+REV_PREV=
+REVS=
+do_cycle
+if [ $RESULT -ne 0 ]
+then 
+  fail "Search ended: Fails from the first revision $REV_FIRST.\n\
+Can not make sure it is a regression from that version."
+fi
+
+REV_PREV=$REV_FIRST
+
+# Only try REV_LAST if diff to REV_FIRST
+if [ $REV_FIRST -ne $REV_LAST ]; then
+    # get last result for reproducing issue
+    REV_CURRENT="$REV_LAST"
+    do_cycle
+fi
+if [ $RESULT -eq 0 ]
+then 
+  success "Search ended: NO REGRESSION FOUND."
+fi
+# calculate middle value
+
+DIFF=$(($LINE_END-$LINE_BEGIN))
+END=0
+FORWARD=yes
+REBUILD=
+while [ $END -eq 0 ]; do
+  if [ -z "$REBUILD" ]; then
+     LINE_CURRENT=$(($DIFF/2+$LINE_BEGIN))
+  fi
+  head -n $LINE_CURRENT ./rev.log | tail -n 1
+  REV_CURRENT=$(head -n $LINE_CURRENT ./rev.log | tail -n 1)
+  do_cycle
+  if [ -n "$REBUILD" ]
+  then
+      if [ "$FORWARD" = yes ]
+      then
+         LINE_CURRENT=$((LINE_CURRENT + 1))
+      else
+         LINE_CURRENT=$((LINE_CURRENT - 1))
+      fi
+      continue
+  fi
+  if [ $RESULT -eq 1 ]
+  then 
+      echo "!!!GO $BACKWARD_DIRECTION!!!"
+      LINE_END="$LINE_CURRENT"
+      FORWARD=no
+  else
+      echo "!!!GO $FORWARD_DIRECTION!!!"
+      LINE_BEGIN="$LINE_CURRENT"
+      FORWARD=yes
+  fi
+  REV_PREV=$REV_CURRENT
+  DIFF=$(($LINE_END-$LINE_BEGIN))
+
+  # Assert DIFF bigger than 0 to avoid infinite loop
+  if [ $DIFF -le 0 ]; then
+    fail "FAIL: something wrong in search."
+  fi
+  if [ $DIFF -eq 1 ]; then
+      # End the loop
+      END=1
+
+      # When the search ends, we need to figure out the trouble revision.
+      # If current revision is good, then the trouble revision will be the
+      # revision pointed by LINE_END.  We check GOAL_RESULT, instead
+      # of 0, to support searching the first good revision.
+      if [ $RESULT -eq $GOAL_RESULT ]; then
+      	LINE_CURRENT=$LINE_END
+	if [ "$FORWARD" = no -a "$FORWARD_DIRECTION" = BACKWARD ]
+	then
+		LINE_CURRENT=$((LINE_CURRENT - 1))
+	fi
+  	REV_CURRENT=$(head -n $LINE_CURRENT ./rev.log | tail -n 1)
+      fi
+  fi
+done
+success "Found first $GOAL revision: $REV_CURRENT"
