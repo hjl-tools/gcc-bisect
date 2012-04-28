@@ -21,12 +21,23 @@ prefix=$(pwd)/$BUILD_DIR/usr
 export PATH=$prefix/bin:$PATH
 export LD_LIBRARY_PATH=$prefix/lib64:$prefix/libx32:$prefix/lib:$LD_LIBRARY_PATH
 
+## kill orphaned processes
+kill_process ()
+{
+  for k in cc1 cc1plus f951 $TEST_KILLS; do
+    killall -9 $k > /dev/null 2>&1
+  done
+}
+
+kill_process
+
 gcc -S -O3 pr53144.c&
 sleep $TEST_TIMEOUT
 jobs
 jobs
 kill %1
 if [ $? -eq 0 ]; then
+  kill_process
   exit 1
 else
   exit 0
