@@ -18,7 +18,7 @@ fi
 
 echo "Update $GCC_DIR GCC git source tree"
 
-LOG=`pwd`/git.log
+[ -z "$LOG" ] && LOG=`pwd`/git.log
 
 cd $GCC_DIR
 
