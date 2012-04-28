@@ -44,14 +44,14 @@ case $SPEC_DIR in
 esac
 
 ## kill orphaned spec processes
-killall -9 runspec > /dev/null 2>&1
-killall -9 specmake > /dev/null 2>&1
-killall -9 specinvoke > /dev/null 2>&1
-if [ -n "$SPEC_KILLS" ]; then
-  for k in $SPEC_KILLS; do
+kill_process ()
+{
+  for k in runspec specmake specinvoke $SPEC_KILLS; do
     killall -9 $k > /dev/null 2>&1
   done
-fi
+}
+
+kill_process
 
 ## cleanup spec environment
 cd $SPEC_DIR &&
@@ -71,14 +71,7 @@ jobs
 jobs
 kill %1
 if [ $? -eq 0 ]; then
-  killall -9 runspec > /dev/null 2>&1
-  killall -9 specmake > /dev/null 2>&1
-  killall -9 specinvoke > /dev/null 2>&1
-  if [ -n "$SPEC_KILLS" ]; then
-    for k in $SPEC_KILLS; do
-      killall -9 $k > /dev/null 2>&1
-    done
-  fi
+  kill_process
   exit 1
 else
   exit 0
