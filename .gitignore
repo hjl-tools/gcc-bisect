@@ -1,8 +1,9 @@
 gcc
 gcc.cfg
 git.log
-gcc-testsuite-run
 gcc-test-run
+gcc-test-run-timeout
+gcc-testsuite-run
 master
 nohup.*
 pr*

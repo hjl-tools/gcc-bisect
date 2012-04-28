@@ -1,0 +1,33 @@
+#!/bin/sh
+
+REV=$1
+
+. ./gcc.cfg
+
+[ -z "$GCC_DIR" ] && GCC_DIR=gcc
+
+if [ -z "$REV" ]; then
+  cd $GCC_DIR
+  REV=$(git log -1 |
+	grep git-svn-id |
+	awk '{ print $2 }' |
+	awk -F@ '{ print $2 }')
+  cd -
+fi
+
+BUILD_DIR=$branch/$REV
+prefix=$(pwd)/$BUILD_DIR/usr
+
+export PATH=$prefix/bin:$PATH
+export LD_LIBRARY_PATH=$prefix/lib64:$prefix/libx32:$prefix/lib:$LD_LIBRARY_PATH
+
+gcc -S -O3 pr53144.c&
+sleep $TEST_TIMEOUT
+jobs
+jobs
+kill %1
+if [ $? -eq 0 ]; then
+  exit 1
+else
+  exit 0
+fi
