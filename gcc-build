@@ -30,7 +30,10 @@ fi
 
 [ -d $BUILD_DIR ] || mkdir -p $BUILD_DIR
 
-[ -d $BUILD_DIR/usr/bin ] && exit 0
+if [ -d $BUILD_DIR/usr/bin ]; then
+  echo $REV > $branch/last_revision
+  exit 0
+fi
 
 if [ -f $BUILD_DIR/make.log ]; then
   if grep "Error " $BUILD_DIR/make.log; then
