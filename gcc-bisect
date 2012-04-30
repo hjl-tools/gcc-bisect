@@ -92,6 +92,9 @@ if [ -z "$last_status" -a -n "$bad_revision" -a -n "$good_revision" ]; then
     echo "$bisect"
     exit 0
   fi
+  initial_check=yes
+else
+  initial_check=no
 fi
 
 while [ 1 = 1 ]; do
@@ -107,7 +110,7 @@ done
 
 echo "$bisect"
 
-if [ $found != "goodbad" ]; then
-  echo No bad or good commit found on GCC $branch branch!
+if [ $initial_check = "no" -a $found != "goodbad" ]; then
+  echo No bad nor good commit found on GCC $branch branch!
   exit 1
 fi
