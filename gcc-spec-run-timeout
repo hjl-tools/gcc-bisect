@@ -17,7 +17,7 @@ if [ -z "$REV" ]; then
 	grep git-svn-id |
 	awk '{ print $2 }' |
 	awk -F@ '{ print $2 }')
-  cd -
+  cd - > /dev/null
 fi
 
 BUILD_DIR=$branch/$REV
@@ -58,7 +58,7 @@ cd $SPEC_DIR &&
 . ./shrc
 runspec -c $SPEC_CFG -a $CLEAN all &> $RUN_LOG &&
 rm -rf result/* &&
-cd - ||
+cd - > /dev/null ||
 exit -1
 
 echo $(date +"%d %H:%M"): start spec run

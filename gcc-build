@@ -9,7 +9,7 @@ REV=$(git log -1 |
       grep git-svn-id |
       awk '{ print $2 }' |
       awk -F@ '{ print $2 }')
-cd -
+cd - > /dev/null
 BUILD_DIR=$branch/$REV
 prefix=$(pwd)/$BUILD_DIR/usr
 
