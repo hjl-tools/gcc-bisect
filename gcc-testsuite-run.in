@@ -19,7 +19,7 @@ BUILD_DIR=$branch/$REV
 CHECK_LOG=`pwd`/$BUILD_DIR/check.log
 
 # Run libstdc++-v3 testsuite
-TEST_DIR=$BUILD_DIR/bld/x86_64-unknown-linux-gnu/libstdc++-v3
+TEST_DIR=$BUILD_DIR/bld/x86_64-unknown-linux-gnu/libstdc++-v3/testsuite
 
 # Run gcc testsuite
 TEST_DIR=$BUILD_DIR/bld/gcc
