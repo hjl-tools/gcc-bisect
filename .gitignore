@@ -7,4 +7,5 @@ gcc-testsuite-run
 master
 nohup.*
 pr*
+rev.log
 spec
