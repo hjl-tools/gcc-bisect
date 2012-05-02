@@ -88,7 +88,7 @@ if [ -z "$last_status" -a -n "$bad_revision" -a -n "$good_revision" ]; then
   echo Try the bad revision: $bad_revision
   ./gcc-update $bad_revision || exit 1
   gcc_test
-  if [ $status != bad ]; then
+  if [ $status == good ]; then
     echo Bad revision $bad_revision is good!
     exit 1
   fi
