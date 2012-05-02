@@ -22,7 +22,7 @@ gcc_test ()
 	awk '{ print $2 }' |
 	awk -F@ '{ print $2 }')
   cd - > /dev/null
-  if grep -q "^$REV$" $branch/skip; then
+  if test -f $branch/skip && grep -q "^$REV$" $branch/skip; then
     echo Skip GCC $branch branch revision $REV!
     status=skip
     return
