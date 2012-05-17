@@ -77,7 +77,12 @@ if [ -z "$WITH" ] ;then
   fi
 fi
 
-CONFIGURE="../../../$GCC_DIR/configure --prefix=$prefix  \
+case $GCC_DIR in
+/*) CONFIGURE=$GCC_DIR/configure ;;
+*) CONFIGURE=../../../$GCC_DIR/configure ;;
+esac
+
+CONFIGURE="$CONFIGURE --prefix=$prefix  \
     --enable-clocale=gnu \
     --with-system-zlib \
     --with-demangler-in-ld \
