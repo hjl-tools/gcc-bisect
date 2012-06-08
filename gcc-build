@@ -23,8 +23,9 @@ echo "$(date +"%d %H:%M"): building revision $REV"
 if [ -f $branch/last_revision ]; then
   ./gcc-changes
   if [ $? = 2 ]; then
+    status=$?
     echo No changes since last build!
-    exit $?
+    exit $status
   fi
 fi
 
