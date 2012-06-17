@@ -47,14 +47,27 @@ gcc_test ()
       [ $found = $status ] || found=goodbad
       ;;
     esac
-    last_status=status
+    last_status=$status
     ;;
   2)
     status=$last_status
     ;;
   *)
-    status=skip
-    echo GCC $branch branch revision $REV failed to build!
+    if [ "$GCC_TEST" = "true" ]; then
+      status=bad
+      last_status=$status
+      case x$found in
+      x)
+	found=$status
+        ;;
+      *)
+	[ $found = $status ] || found=goodbad
+	;;
+      esac
+    else
+      status=skip
+      echo GCC $branch branch revision $REV failed to build!
+     fi
     ;;
   esac
 }
