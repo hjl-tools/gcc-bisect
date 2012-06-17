@@ -63,9 +63,9 @@ case "$status" in
   skip=
   for c in $skip_cpus; do
     if [ -z "$skip" ]; then 
-      skip="$c"
+      skip="$c/"
     else
-      skip="$skip|/$c"
+      skip="$skip|/$c/"
     fi
   done
   # Check if changes are relevant.
@@ -118,7 +118,7 @@ case "$status" in
 esac
 
 if [ -z "$files" ]; then
-  echo No relevant changes on $branch since revision $last_revision.
+  echo No relevant changes on $branch since revision $last_revision: $last_commit
   # Return 2 to indicate no relevant changes.
   exit 2
 fi
