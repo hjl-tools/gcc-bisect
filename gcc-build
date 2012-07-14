@@ -11,7 +11,11 @@ REV=$(git log -1 |
       awk -F@ '{ print $2 }')
 cd - > /dev/null
 BUILD_DIR=$branch/$REV
-[ -z "$PREFIX" ] && PREFIX=$(pwd)/$BUILD_DIR/usr
+if [ -z "$PREFIX" ]; then
+  PREFIX=$(pwd)/$BUILD_DIR/usr
+else
+  DESTDIR=$(pwd)/$BUILD_DIR/install
+fi
 
 CPU_NUM=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 if [ $CPU_NUM -ge 12 ]; then
@@ -104,8 +108,12 @@ cd $BUILD_DIR &&
   make $BOOTSTRAP_MODE $FLAGS -j $CPU_NUM &>../make.log &&
 # make install must not specify -j x, or some libs like libmudflap won't be 
 # installed correctly
-  (make install-strip || make install) &>../install.log &&
-  echo $REV > ../../last_revision &&
-  exit 0
+  (make install-strip DESTDIR=$DESTDIR || make install DESTDIR=$DESTDIR) &>../install.log &&
+  echo $REV > ../../last_revision
 
-exit 1
+if [ $? = 0 ]; then
+  [ -n "$DESTDIR" ] && mv $DESTDIR/$PREFIX $DESTDIR/../usr && exit $?
+  exit 0
+else
+  exit 1
+fi
