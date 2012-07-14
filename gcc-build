@@ -11,7 +11,7 @@ REV=$(git log -1 |
       awk -F@ '{ print $2 }')
 cd - > /dev/null
 BUILD_DIR=$branch/$REV
-prefix=$(pwd)/$BUILD_DIR/usr
+[ -z "$PREFIX" ] && PREFIX=$(pwd)/$BUILD_DIR/usr
 
 CPU_NUM=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 if [ $CPU_NUM -ge 12 ]; then
@@ -82,7 +82,7 @@ case $GCC_DIR in
 *) CONFIGURE=../../../$GCC_DIR/configure ;;
 esac
 
-CONFIGURE="$CONFIGURE --prefix=$prefix  \
+CONFIGURE="$CONFIGURE --prefix=$PREFIX \
     --enable-clocale=gnu \
     --with-system-zlib \
     --with-demangler-in-ld \
