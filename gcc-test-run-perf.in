@@ -24,7 +24,7 @@ export LD_LIBRARY_PATH=$prefix/lib64:$prefix/libx32:$prefix/lib:$LD_LIBRARY_PATH
 
 g++ pr54000.cc -O2
 [ $? = 0 ] || exit 1
-run_time=$(/bin/time -f "%e" ./a.out 2>&1)
+run_time=$(/usr/bin/time -f "%e" ./a.out 2>&1)
 [ $? = 0 ] || exit 1
 
 [ ".$run_time" == "." ] && run_time=1
