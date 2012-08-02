@@ -1,0 +1,9 @@
+#!/bin/sh
+
+CPU_NUM=$(/usr/bin/getconf _NPROCESSORS_ONLN)
+if [ $CPU_NUM -ge 12 ]; then
+  CPU_NUM=12
+fi
+CPU_NUM=1
+
+cd linux-stable && make -s -j$CPU_NUM all > ../$BUILD_DIR/kernel.log 2>&1

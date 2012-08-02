@@ -1,0 +1,48 @@
+#!/bin/sh
+
+REV=$1
+
+. ./gcc.cfg
+
+[ -z "$GCC_DIR" ] && GCC_DIR=gcc
+
+if [ -z "$REV" ]; then
+  cd $GCC_DIR
+  REV=$(git log -1 |
+	grep git-svn-id |
+	awk '{ print $2 }' |
+	awk -F@ '{ print $2 }')
+  cd - > /dev/null
+fi
+
+BUILD_DIR=$branch/$REV
+export BUILD_DIR
+prefix=$(pwd)/$BUILD_DIR/usr
+GCC_DIR=$BUILD_DIR/bld/gcc
+
+export PATH=$prefix/bin:$PATH
+export LD_LIBRARY_PATH=$prefix/lib64:$prefix/libx32:$prefix/lib:$LD_LIBRARY_PATH
+
+cd linux-stable &&
+make -s mrproper &&
+cp ../ia32e.rhel6.lfs.config .config &&
+make -s oldnoconfig
+[ $? = 0 ] || exit 1
+cd ..
+run_time=$(/usr/bin/time -f "%e" ./kernel-build 2>&1)
+[ $? = 0 ] || exit 1
+
+[ ".$run_time" == "." ] && run_time=1
+
+[ -f ./good_time ] || echo $run_time >./good_time
+good_time=$(cat ./good_time)
+
+delta_time=$(echo | \
+	     awk "{ print ($run_time-$good_time)*100/$good_time }" | \
+	     sed -e "s/\..*//")
+
+echo "$run_time vs. $good_time = $delta_time"
+
+# Return 0 to continue the search with later dates, 1 for earlier dates.
+[ $delta_time -lt 10 ] && exit 0
+exit 1
