@@ -33,7 +33,7 @@ cp ../ia32e.rhel6.lfs.config .config &&
 make -s oldnoconfig
 [ $? = 0 ] || exit 1
 cd ..
-run_time=$(/usr/bin/time -f "%e" ./kernel-build 2>&1)
+run_time=$(/usr/bin/time -f "%e" ./kernel-build.in 2>&1)
 [ $? = 0 ] || exit 1
 
 [ ".$run_time" == "." ] && run_time=1
