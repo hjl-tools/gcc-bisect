@@ -34,11 +34,9 @@ fi
 case $branch in
 master)
   svn_branch=trunk
-  GCC_VERSION=trunk
   ;;
 *)
   svn_branch=$branch
-  GCC_VERSION=$(sed -s "s/\.[0-9]*$//" gcc/BASE-VER)
   ;;
 esac
 
