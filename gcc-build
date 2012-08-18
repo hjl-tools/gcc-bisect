@@ -50,6 +50,9 @@ fi
 LANGS=${LANGS-c,c++,fortran}
 BOOTSTRAP=${BOOTSTRAP---disable-bootstrap}
 
+CC=${CC-gcc}
+CXX=${CXX-g++}
+
 case x"$BOOTSTRAP" in
 x*--disable-bootstrap*)
   FLAGS="BOOT_CFLAGS=-g CFLAGS=-g"
@@ -58,13 +61,9 @@ esac
 
 case x"$TARGET" in
 xi[3-6]86-*)
-  CC="gcc -m32"
-  CXX="g++ -m32"
+  CC="$CC -m32"
+  CXX="$CXX -m32"
   PATH=/usr/local32/bin:$PATH
-  ;;
-x*)
-  CC="gcc"
-  CXX="g++"
   ;;
 esac
 
