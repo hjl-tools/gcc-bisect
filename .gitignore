@@ -1,7 +1,7 @@
 gcc
 gcc.cfg
 git.log
-gcc-4_7-branch
+gcc-4_*-branch
 gcc-test-run
 gcc-test-run-timeout
 gcc-testsuite-run
