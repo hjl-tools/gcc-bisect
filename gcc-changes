@@ -100,6 +100,8 @@ case "$status" in
 	  grep -v win32 |
 	  grep -v /doc/ |
 	  grep -v /po/ |
+	  grep -v /version.c |
+	  grep -v /version.h |
 	  grep -v maintainer-scripts |
 	  grep -v MAINTAINERS |
 	  grep -v README |
