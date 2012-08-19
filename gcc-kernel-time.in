@@ -27,6 +27,8 @@ fi
 export PATH=$prefix/bin:$PATH
 export LD_LIBRARY_PATH=$prefix/lib64:$prefix/libx32:$prefix/lib:$LD_LIBRARY_PATH
 
+echo Testing $(which gcc):
+
 cd linux-stable &&
 make -s mrproper &&
 cp ../ia32e.rhel6.lfs.config .config &&

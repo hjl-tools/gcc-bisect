@@ -22,6 +22,8 @@ GCC_DIR=$BUILD_DIR/bld/gcc
 export PATH=$prefix/bin:$PATH
 export LD_LIBRARY_PATH=$prefix/lib64:$prefix/libx32:$prefix/lib:$LD_LIBRARY_PATH
 
+echo Testing $(which gcc):
+
 g++ pr54000.cc -O2
 [ $? = 0 ] || exit 1
 run_time=$(/usr/bin/time -f "%e" ./a.out 2>&1)
