@@ -55,7 +55,7 @@ CXX=${CXX-g++}
 
 case x"$BOOTSTRAP" in
 x*--disable-bootstrap*)
-  FLAGS="BOOT_CFLAGS=-g CFLAGS=-g"
+  FLAGS="BOOT_CFLAGS=-g CFLAGS=-g BOOT_CXXFLAGS=-g CXXFLAGS=-g"
   ;;
 esac
 
