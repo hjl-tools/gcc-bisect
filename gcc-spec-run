@@ -54,6 +54,7 @@ exit -1
 echo $(date +"%d %H:%M"): start spec run
 
 ## run SPEC CPU and detect return value
+$(TEST_SETUP)
 echo runspec -c $SPEC_CFG $SPEC_FLAGS -n 1 -l -o asc $SPEC_RUN >> $RUN_LOG
 runspec -c $SPEC_CFG $SPEC_FLAGS -n 1 -l -o asc $SPEC_RUN >> $RUN_LOG 2>&1
 if [ $? -eq 0 ]; then
