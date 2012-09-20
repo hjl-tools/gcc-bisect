@@ -36,12 +36,6 @@ GCC_TEST_LOG=$(pwd)/$BUILD_DIR/gcc-test.log
 CONFIGURE=$GCC_SOURCE_DIR/configure
 GCC_TEST_LANGS=${GCC_TEST_LANGS-c,c++,fortran}
 
-case x"$GCC_TEST_BOOTSTRAP" in
-x*--disable-bootstrap*)
-  GCC_TEST_FLAGS="BOOT_CFLAGS=-g CFLAGS=-g BOOT_CXXFLAGS=-g CXXFLAGS=-g"
-  ;;
-esac
-
 case x"$GCC_TEST_TARGET" in
 xi[3-6]86-*)
   CC="$CC -m32"
