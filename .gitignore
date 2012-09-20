@@ -2,7 +2,10 @@ gcc
 gcc.cfg
 git.log
 gcc-4_*-branch
+gcc-test
+gcc-test-bld
 gcc-test-run
+gcc-test-run-perf
 gcc-test-run-timeout
 gcc-testsuite-run
 good_time

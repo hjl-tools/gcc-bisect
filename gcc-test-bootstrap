@@ -1,0 +1,68 @@
+#!/bin/sh
+
+REV=$1
+
+. ./gcc.cfg
+
+[ -z "$GCC_DIR" ] && GCC_DIR=gcc
+
+if [ -z "$REV" ]; then
+  cd $GCC_DIR
+  REV=$(git log -1 |
+	grep git-svn-id |
+	awk '{ print $2 }' |
+	awk -F@ '{ print $2 }')
+  cd - > /dev/null
+fi
+
+BUILD_DIR=$branch/$REV
+prefix=$(pwd)/$BUILD_DIR/usr
+
+export PATH=$prefix/bin:$PATH
+export LD_LIBRARY_PATH=$prefix/lib64:$prefix/libx32:$prefix/lib:$LD_LIBRARY_PATH
+export CC=$prefix/bin/gcc
+export CXX=$prefix/bin/g++
+
+echo Testing $(which gcc):
+
+CPU_NUM=$(/usr/bin/getconf _NPROCESSORS_ONLN)
+if [ $CPU_NUM -ge 12 ]; then
+  CPU_NUM=12
+fi
+
+GCC_SOURCE_DIR=${GCC_SRC_DIR-$(pwd)/gcc-test}
+GCC_BUILD_DIR=gcc-test-bld
+GCC_TEST_LOG=$(pwd)/$BUILD_DIR/gcc-test.log
+CONFIGURE=$GCC_SOURCE_DIR/configure
+LANGS=${LANGS-c,c++,fortran}
+
+case x"$BOOTSTRAP" in
+x*--disable-bootstrap*)
+  FLAGS="BOOT_CFLAGS=-g CFLAGS=-g BOOT_CXXFLAGS=-g CXXFLAGS=-g"
+  ;;
+esac
+
+case x"$TARGET" in
+xi[3-6]86-*)
+  CC="$CC -m32"
+  CXX="$CXX -m32"
+  PATH=/usr/local32/bin:$PATH
+  ;;
+esac
+
+CONFIGURE="$CONFIGURE \
+    --enable-clocale=gnu \
+    --with-system-zlib \
+    --with-demangler-in-ld \
+    $CHECKING \
+    --enable-languages=$LANGS \
+    $TARGET \
+    $BOOTSTRAP
+"
+
+rm -rf $GCC_BUILD_DIR &&
+  mkdir $GCC_BUILD_DIR &&
+  cd $GCC_BUILD_DIR &&
+  echo $CONFIGURE > $GCC_TEST_LOG &&
+  $CONFIGURE >> $GCC_TEST_LOG 2>&1 &&
+  make $BOOTSTRAP_MODE $FLAGS -j $CPU_NUM &>> $GCC_TEST_LOG
