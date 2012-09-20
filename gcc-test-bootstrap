@@ -34,15 +34,15 @@ GCC_SOURCE_DIR=${GCC_SRC_DIR-$(pwd)/gcc-test}
 GCC_BUILD_DIR=gcc-test-bld
 GCC_TEST_LOG=$(pwd)/$BUILD_DIR/gcc-test.log
 CONFIGURE=$GCC_SOURCE_DIR/configure
-LANGS=${LANGS-c,c++,fortran}
+GCC_TEST_LANGS=${GCC_TEST_LANGS-c,c++,fortran}
 
-case x"$BOOTSTRAP" in
+case x"$GCC_TEST_BOOTSTRAP" in
 x*--disable-bootstrap*)
   FLAGS="BOOT_CFLAGS=-g CFLAGS=-g BOOT_CXXFLAGS=-g CXXFLAGS=-g"
   ;;
 esac
 
-case x"$TARGET" in
+case x"$GCC_TEST_TARGET" in
 xi[3-6]86-*)
   CC="$CC -m32"
   CXX="$CXX -m32"
@@ -54,10 +54,10 @@ CONFIGURE="$CONFIGURE \
     --enable-clocale=gnu \
     --with-system-zlib \
     --with-demangler-in-ld \
-    $CHECKING \
-    --enable-languages=$LANGS \
-    $TARGET \
-    $BOOTSTRAP
+    $GCC_TEST_CHECKING \
+    --enable-languages=$GCC_TEST_LANGS \
+    $GCC_TEST_TARGET \
+    $GCC_TEST_BOOTSTRAP
 "
 
 rm -rf $GCC_BUILD_DIR &&
