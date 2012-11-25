@@ -52,7 +52,14 @@ function do_cycle()
 }
 
 # find out all revisions
-(cd $branch; ls $REVERSE -d */usr) | sed -e "s,/usr,," > rev.log
+case $CHECK_GCC in
+bld)
+  (cd $branch; ls $REVERSE -d */bld/stage1-gcc) | sed -e "s,/bld/stage1-gcc,," > rev.log
+  ;;
+*)
+  (cd $branch; ls $REVERSE -d */usr) | sed -e "s,/usr,," > rev.log
+  ;;
+esac
 if [ -n "$REV_FIRST" ]; then
   REVLOG=rev.log.$$
   rm -f $REVLOG
