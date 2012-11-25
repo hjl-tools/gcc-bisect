@@ -1,0 +1,4 @@
+b main
+r
+p ((struct cl_option *) cl_options)[0].opt_text
+q

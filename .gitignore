@@ -2,12 +2,14 @@ gcc
 gcc.cfg
 git.log
 gcc-4_*-branch
+gcc-gdb-run
 gcc-test
 gcc-test-bld
 gcc-test-run
 gcc-test-run-perf
 gcc-test-run-timeout
 gcc-testsuite-run
+gdb.cmd
 good_time
 linux*
 master
