@@ -50,7 +50,9 @@ gcc_test ()
     last_status=$status
     ;;
   2)
-    status=$last_status
+    status=$branch/$(cat $branch/last_revision)/status
+    status=$(cat $status 2> /dev/null)
+    [ -z "$status" ] && status=$last_status
     ;;
   *)
     if [ "$GCC_TEST" = "true" ]; then
@@ -70,6 +72,7 @@ gcc_test ()
      fi
     ;;
   esac
+  [ -d $branch/$REV ] && echo $status > $branch/$REV/status
 }
 
 # Remove the last revision
