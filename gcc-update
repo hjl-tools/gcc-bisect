@@ -65,7 +65,7 @@ esac
 
 status=$(git status | head -2 | grep -v "On branch")
 case "$status" in
-*clean*|*"can be fast-forwarded"*)
+*clean*|*bisecting*|*"can be fast-forwarded"*)
   ;;
 *)
   echo GCC $branch branch is not clean:
