@@ -90,6 +90,7 @@ CONFIGURE="$CONFIGURE --prefix=$PREFIX \
     --with-system-zlib \
     --with-demangler-in-ld \
     $CHECKING \
+    $CONFIG_FLAGS \
     --enable-languages=$LANGS \
     $WITH \
     $TARGET \
