@@ -55,7 +55,8 @@ CXX=${CXX-g++}
 
 case x"$BOOTSTRAP" in
 x*--disable-bootstrap*)
-  FLAGS="BOOT_CFLAGS=-g CFLAGS=-g BOOT_CXXFLAGS=-g CXXFLAGS=-g"
+  FLAGS='BOOT_CFLAGS=-g CFLAGS=-g BOOT_CXXFLAGS=-g CXXFLAGS=-g
+	 CFLAGS_FOR_TARGET="-O2 -g" CXXFLAGS_FOR_TARGET="-O2 -g"'
   ;;
 esac
 
@@ -103,9 +104,9 @@ cd $BUILD_DIR &&
   rm -rf bld &&
   mkdir bld &&
   cd bld &&
-  echo $CONFIGURE >../configure.log &&
-  $CONFIGURE >> ../configure.log 2>&1 &&
-  make $BOOTSTRAP_MODE $FLAGS -j $CPU_NUM &>../make.log &&
+  echo $FLAGS $CONFIGURE >../configure.log &&
+  eval $FLAGS $CONFIGURE >> ../configure.log 2>&1 &&
+  eval `echo make $BOOTSTRAP_MODE $FLAGS -j $CPU_NUM` &> ../make.log &&
 # make install must not specify -j x, or some libs like libmudflap won't be 
 # installed correctly
   (make install-strip DESTDIR=$DESTDIR || make install DESTDIR=$DESTDIR) &>../install.log &&
