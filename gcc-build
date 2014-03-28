@@ -53,6 +53,8 @@ BOOTSTRAP=${BOOTSTRAP---disable-bootstrap}
 CC=${CC-gcc}
 CXX=${CXX-g++}
 
+CONFIG_FLAGS="MAKEINFO=/usr/bin/false"
+
 case x"$BOOTSTRAP" in
 x*--disable-bootstrap*)
   FLAGS='BOOT_CFLAGS=-g CFLAGS=-g BOOT_CXXFLAGS=-g CXXFLAGS=-g
@@ -104,8 +106,8 @@ cd $BUILD_DIR &&
   rm -rf bld &&
   mkdir bld &&
   cd bld &&
-  echo $FLAGS $CONFIGURE >../configure.log &&
-  eval $FLAGS $CONFIGURE >> ../configure.log 2>&1 &&
+  echo $CONFIG_FLAGS $FLAGS $CONFIGURE >../configure.log &&
+  eval $CONFIG_FLAGS $FLAGS $CONFIGURE >> ../configure.log 2>&1 &&
   eval `echo make $BOOTSTRAP_MODE $FLAGS -j $CPU_NUM` &> ../make.log &&
 # make install must not specify -j x, or some libs like libmudflap won't be 
 # installed correctly
