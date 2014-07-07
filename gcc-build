@@ -53,7 +53,13 @@ BOOTSTRAP=${BOOTSTRAP---disable-bootstrap}
 CC=${CC-gcc}
 CXX=${CXX-g++}
 
-CONFIG_FLAGS="MAKEINFO=/usr/bin/false"
+case $branch in
+gcc-4_0-branch)
+  ;;
+*)
+  CONFIG_FLAGS="MAKEINFO=/usr/bin/false"
+  ;;
+esac
 
 case x"$BOOTSTRAP" in
 x*--disable-bootstrap*)
