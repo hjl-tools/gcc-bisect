@@ -57,7 +57,7 @@ case $branch in
 gcc-4_0-branch)
   ;;
 *)
-  CONFIG_FLAGS="MAKEINFO=/usr/bin/false"
+  CONFIG_FLAGS="$CONFIG_FLAGS MAKEINFO=/usr/bin/false"
   ;;
 esac
 
@@ -73,6 +73,12 @@ xi[3-6]86-*)
   CC="$CC -m32"
   CXX="$CXX -m32"
   PATH=/usr/local32/bin:$PATH
+  ;;
+esac
+
+case x"$CONFIG_FLAGS" in
+x*-mx32*)
+  PATH=/usr/localx32/bin:$PATH
   ;;
 esac
 
