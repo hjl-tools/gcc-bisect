@@ -61,7 +61,7 @@ x*--disable-bootstrap*)
 esac
 
 case $branch in
-gcc-4_0-branch)
+gcc-4_0-branch|master)
   ;;
 *)
   FLAGS="$FLAGS MAKEINFO=/usr/bin/false"
