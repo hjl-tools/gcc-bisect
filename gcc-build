@@ -82,7 +82,7 @@ x*-mx32*)
   ;;
 esac
 
-WITH=
+WITH="--without-isl"
 if [ -z "$WITH" ] ;then
   if rpm -q ppl > /dev/null; then
     if grep "with_ppl=no" $GCC_DIR/configure.ac | grep plus; then
